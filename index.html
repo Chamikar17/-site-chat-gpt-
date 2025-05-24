@@ -2,58 +2,119 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Portfolio</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ꮇᴀꜰɪᴀ Chat</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: #ece5dd;
+    }
+    .header {
+      background: #075E54;
+      color: white;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .header .name {
+      font-weight: bold;
+      margin-left: 10px;
+    }
+    .header .status {
+      font-size: 12px;
+      margin-left: 10px;
+    }
+    .chat-box {
+      padding: 10px;
+      height: 80vh;
+      overflow-y: auto;
+      background: url('https://i.ibb.co/zJrJ8St/wa-bg.jpg'); /* WhatsApp-style bg */
+      background-size: cover;
+    }
+    .message {
+      background: white;
+      padding: 8px 12px;
+      margin: 10px 0;
+      border-radius: 8px;
+      max-width: 70%;
+    }
+    .you {
+      align-self: flex-end;
+      background: #dcf8c6;
+    }
+    .seen {
+      font-size: 10px;
+      text-align: right;
+    }
+    .reply {
+      background: #fff;
+      font-style: italic;
+    }
+    .input-box {
+      display: flex;
+      padding: 10px;
+      background: white;
+    }
+    .input-box input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+    .input-box button {
+      background: #25D366;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 50%;
+      margin-left: 10px;
+      cursor: pointer;
+      color: white;
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
 
-  <header>
-    <nav>
-      <div class="logo">🌟 MyPortfolio</div>
-      <ul class="nav-links">
-        <li><a href="#hero">Home</a></li>
-        <li><a href="#about">About</a></li>
-        <li><a href="#services">Services</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </nav>
-  </header>
+  <div class="header">
+    <div class="name">Ꮇᴀꜰɪᴀ</div>
+    <div class="status">online</div>
+  </div>
 
-  <section id="hero">
-    <h1>Welcome to My World 🌍</h1>
-    <p>Crafting websites that tell your story.</p>
-    <a href="#contact" class="btn">Get in Touch</a>
-  </section>
+  <div class="chat-box" id="chat">
+    <!-- messages will appear here -->
+  </div>
 
-  <section id="about">
-    <h2>About Me</h2>
-    <p>I’m a creative developer focused on UI/UX and performance.</p>
-  </section>
+  <div class="input-box">
+    <input type="text" id="messageInput" placeholder="Message" />
+    <button onclick="sendMessage()">➤</button>
+  </div>
 
-  <section id="services">
-    <h2>Services</h2>
-    <div class="cards">
-      <div class="card">Web Design</div>
-      <div class="card">Frontend Development</div>
-      <div class="card">SEO Optimization</div>
-    </div>
-  </section>
+  <script>
+    function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const msg = input.value.trim();
+      if (!msg) return;
 
-  <section id="contact">
-    <h2>Contact Me</h2>
-    <form id="contactForm">
-      <input type="text" placeholder="Your Name" required />
-      <input type="email" placeholder="Your Email" required />
-      <textarea placeholder="Your Message" required></textarea>
-      <button type="submit">Send</button>
-    </form>
-  </section>
+      const chat = document.getElementById('chat');
 
-  <footer>
-    <p>© 2025 MyPortfolio. All rights reserved.</p>
-  </footer>
+      // User message
+      const userMsg = document.createElement('div');
+      userMsg.className = 'message you';
+      userMsg.innerHTML = `${msg}<div class="seen">seen</div>`;
+      chat.appendChild(userMsg);
 
-  <script src="script.js"></script>
+      // Bot reply
+      const botMsg = document.createElement('div');
+      botMsg.className = 'message reply';
+      botMsg.innerText = 'Ruply bot: Coming Soon... 🤫';
+      setTimeout(() => chat.appendChild(botMsg), 1000);
+
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+    }
+  </script>
+
 </body>
 </html>
