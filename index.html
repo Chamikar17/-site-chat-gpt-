@@ -1,120 +1,117 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ꮇᴀꜰɪᴀ Chat</title>
   <style>
     body {
       margin: 0;
       font-family: sans-serif;
-      background: #ece5dd;
+      background-color: #ece5dd;
     }
-    .header {
-      background: #075E54;
+    .top-bar {
+      background-color: #075E54;
       color: white;
       padding: 10px;
       display: flex;
       align-items: center;
     }
-    .header .name {
+    .top-bar .name {
       font-weight: bold;
-      margin-left: 10px;
+      font-size: 16px;
     }
-    .header .status {
+    .top-bar .status {
       font-size: 12px;
       margin-left: 10px;
     }
-    .chat-box {
-      padding: 10px;
+    .chat-area {
       height: 80vh;
-      overflow-y: auto;
-      background: url('https://i.ibb.co/zJrJ8St/wa-bg.jpg'); /* WhatsApp-style bg */
+      padding: 10px;
+      background: url('https://i.ibb.co/zJrJ8St/wa-bg.jpg');
       background-size: cover;
+      overflow-y: auto;
     }
     .message {
-      background: white;
+      background: #dcf8c6;
       padding: 8px 12px;
       margin: 10px 0;
-      border-radius: 8px;
-      max-width: 70%;
+      border-radius: 7.5px;
+      max-width: 75%;
+      position: relative;
     }
-    .you {
-      align-self: flex-end;
-      background: #dcf8c6;
-    }
-    .seen {
+    .message::after {
+      content: "seen";
       font-size: 10px;
-      text-align: right;
+      position: absolute;
+      bottom: -14px;
+      right: 10px;
+      color: gray;
     }
     .reply {
-      background: #fff;
+      background: white;
+      padding: 8px 12px;
+      border-radius: 7.5px;
+      max-width: 75%;
+      margin: 10px 0;
       font-style: italic;
     }
-    .input-box {
+    .input-bar {
       display: flex;
       padding: 10px;
-      background: white;
+      background: #f0f0f0;
+      border-top: 1px solid #ddd;
     }
-    .input-box input {
+    .input-bar input {
       flex: 1;
       padding: 10px;
       border-radius: 20px;
       border: 1px solid #ccc;
       outline: none;
     }
-    .input-box button {
+    .input-bar button {
       background: #25D366;
       border: none;
-      padding: 10px 16px;
+      color: white;
       border-radius: 50%;
+      padding: 10px 16px;
       margin-left: 10px;
       cursor: pointer;
-      color: white;
-      font-size: 16px;
     }
   </style>
 </head>
 <body>
-
-  <div class="header">
-    <div class="name">Ꮇᴀꜰɪᴀ</div>
-    <div class="status">online</div>
-  </div>
-
-  <div class="chat-box" id="chat">
-    <!-- messages will appear here -->
-  </div>
-
-  <div class="input-box">
-    <input type="text" id="messageInput" placeholder="Message" />
+  <div class="top-bar">
+    <div>
+      <div class="name">Ꮇᴀꜰɪᴀ</div>
+      <div class="status">online</div>
+    </div>
+  </div>  <div class="chat-area" id="chat">
+    <!-- Messages appear here -->
+  </div>  <div class="input-bar">
+    <input type="text" id="msgInput" placeholder="Message"/>
     <button onclick="sendMessage()">➤</button>
-  </div>
-
-  <script>
+  </div>  <script>
     function sendMessage() {
-      const input = document.getElementById('messageInput');
+      const chat = document.getElementById("chat");
+      const input = document.getElementById("msgInput");
       const msg = input.value.trim();
       if (!msg) return;
 
-      const chat = document.getElementById('chat');
-
-      // User message
-      const userMsg = document.createElement('div');
-      userMsg.className = 'message you';
-      userMsg.innerHTML = `${msg}<div class="seen">seen</div>`;
+      const userMsg = document.createElement("div");
+      userMsg.className = "message";
+      userMsg.innerText = msg;
       chat.appendChild(userMsg);
 
-      // Bot reply
-      const botMsg = document.createElement('div');
-      botMsg.className = 'message reply';
-      botMsg.innerText = 'Ruply bot: Coming Soon... 🤫';
-      setTimeout(() => chat.appendChild(botMsg), 1000);
-
-      input.value = '';
+      input.value = "";
       chat.scrollTop = chat.scrollHeight;
-    }
-  </script>
 
-</body>
+      setTimeout(() => {
+        const botReply = document.createElement("div");
+        botReply.className = "reply";
+        botReply.innerText = "Ruply bot: Coming Soon... 🤫";
+        chat.appendChild(botReply);
+        chat.scrollTop = chat.scrollHeight;
+      }, 1000);
+    }
+  </script></body>
 </html>
