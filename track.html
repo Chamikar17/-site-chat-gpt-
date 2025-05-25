@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tracking...</title>
+</head>
+<body>
+  <h2>Sharing your location...</h2>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const user = urlParams.get('user');
+
+    navigator.geolocation.getCurrentPosition(pos => {
+      fetch('/api/saveLocation', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username: user, lat: pos.coords.latitude, lon: pos.coords.longitude })
+      }).then(() => {
+        document.body.innerHTML += "<p>📍 Location Shared!</p>";
+      });
+    });
+  </script>
+</body>
+</html>
