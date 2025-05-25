@@ -1,89 +1,126 @@
-<!DOCTYPE html>
-<html lang="en">
+/* LOCATION TRACKING SITE UI & BACKEND (no Firebase, memory-based) */
+
+// 1. index.html (Login + Signup page)
+
+<!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Location Tracker</title>
+  <meta charset="UTF-8">
+  <title>Login / Signup</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
-    .box { max-width: 400px; margin: auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
-    input, button { width: 100%; padding: 10px; margin: 5px 0; }
-    #dashboard { display: none; }
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    input, button { margin: 5px; padding: 8px; }
+    #error { color: red; }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h2>Sign Up / Login</h2>
-    <input type="text" id="username" placeholder="Username" />
-    <input type="email" id="email" placeholder="Email (only for signup)" />
-    <input type="password" id="password" placeholder="Password" />
-    <button onclick="login()">Login</button>
+  <h1>📍 Location Tracker</h1>  <div>
+    <h2>Signup</h2>
+    <input id="susername" placeholder="Username" />
+    <input id="semail" placeholder="Email" />
+    <input id="spassword" placeholder="Password" type="password" />
     <button onclick="signup()">Sign Up</button>
-  </div>
-
-  <div class="box" id="dashboard">
-    <h2>Dashboard</h2>
-    <button onclick="copyLink()">📋 Copy Tracking Link</button>
-    <button onclick="showLocation()">📍 View Last Location</button>
-    <p id="linkText"></p>
-    <p id="locationText"></p>
-    <button onclick="logout()">🚪 Logout</button>
-  </div>
-
-  <script>
-    let sessionUser = '';
-
-    function login() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      fetch('/api/login', {
+  </div>  <div>
+    <h2>Login</h2>
+    <input id="lusername" placeholder="Username" />
+    <input id="lpassword" placeholder="Password" type="password" />
+    <button onclick="login()">Login</button>
+  </div>  <div id="error"></div>  <script>
+    async function signup() {
+      const res = await fetch('/api/signup', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ username, password })
-      })
-      .then(res => res.ok ? res.text() : Promise.reject(res.text()))
-      .then(msg => {
-        alert(msg);
-        sessionUser = username;
-        document.querySelector('.box').style.display = 'none';
-        document.getElementById('dashboard').style.display = 'block';
-      })
-      .catch(async err => alert(await err));
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: susername.value,
+          email: semail.value,
+          password: spassword.value
+        })
+      });
+      const txt = await res.text();
+      alert(txt);
     }
 
-    function signup() {
-      const username = document.getElementById('username').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value.trim();
-
-      fetch('/api/signup', {
+    async function login() {
+      const res = await fetch('/api/login', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ username, email, password })
-      })
-      .then(res => res.ok ? res.text() : Promise.reject(res.text()))
-      .then(msg => alert(msg))
-      .catch(async err => alert(await err));
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: lusername.value,
+          password: lpassword.value
+        })
+      });
+      const txt = await res.text();
+      if (res.ok) {
+        sessionStorage.setItem('user', lusername.value);
+        location.href = '/dashboard.html';
+      } else {
+        error.innerText = txt;
+      }
     }
+  </script></body>
+</html>// 2. dashboard.html
+
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+</head>
+<body>
+  <h1>Welcome to Dashboard</h1>
+  <button onclick="copyLink()">📎 Copy Tracking Link</button>
+  <button onclick="viewLocation()">📍 View Tracked Location</button>  <script>
+    const user = sessionStorage.getItem('user');
+    if (!user) location.href = '/index.html';
 
     function copyLink() {
-      const url = `${location.origin}/track.html?user=${sessionUser}`;
-      navigator.clipboard.writeText(url);
-      document.getElementById('linkText').innerText = `Link Copied: ${url}`;
+      const link = location.origin + '/track.html?user=' + user;
+      navigator.clipboard.writeText(link).then(() => alert('Copied ✅'));
     }
 
-    function showLocation() {
-      fetch(`/api/location?user=${sessionUser}`)
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById('locationText').innerText = `Last Seen: ${data.lat}, ${data.lon}`;
+    function viewLocation() {
+      location.href = '/track.html?user=' + user;
+    }
+  </script></body>
+</html>// 3. track.html (show location)
+
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tracker</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>#map { height: 400px; }</style>
+</head>
+<body>
+  <h2>Tracking Map</h2>
+  <div id="map"></div>  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>  <script>
+    const user = new URLSearchParams(location.search).get('user');
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async pos => {
+        const { latitude, longitude } = pos.coords;
+        await fetch('/api/location', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user, latitude, longitude })
         });
+
+        showMap(latitude, longitude);
+      });
+    } else {
+      alert('Location not supported');
     }
 
-    function logout() {
-      location.reload();
+    async function showMap(lat, lng) {
+      const map = L.map('map').setView([lat, lng], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+      L.marker([lat, lng]).addTo(map).bindPopup('You are here').openPopup();
     }
-  </script>
-</body>
-</html>
+  </script></body>
+</html>// 4. /pages/api/signup.js let users = [];
+
+export default function handler(req, res) { if (req.method !== 'POST') return res.status(405).send('Method Not Allowed'); const { username, email, password } = req.body; if (!username || !email || !password) return res.status(400).send('All fields required'); const exists = users.find(u => u.username === username); if (exists) return res.status(400).send('❌ Username already exists'); users.push({ username, email, password }); res.send('✅ Signup successful'); }
+
+// 5. /pages/api/login.js export default function handler(req, res) { if (req.method !== 'POST') return res.status(405).send('Method Not Allowed'); const { username, password } = req.body; const user = users.find(u => u.username === username && u.password === password); if (user) res.send('✅ Login successful'); else res.status(401).send('❌ Invalid credentials'); }
+
+// 6. /pages/api/location.js let locations = {};
+
+export default function handler(req, res) { if (req.method === 'POST') { const { user, latitude, longitude } = req.body; locations[user] = { latitude, longitude }; res.send('Saved ✅'); } else if (req.method === 'GET') { const { user } = req.query; if (locations[user]) res.json(locations[user]); else res.status(404).send('Not Found'); } else { res.status(405).send('Method Not Allowed'); } }
+
