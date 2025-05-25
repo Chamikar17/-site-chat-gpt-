@@ -6,10 +6,8 @@ export default function handler(req, res) {
     return res.status(400).send('All fields required');
   }
 
-  // Fake database (In-memory, not persistent)
   const users = global.users || (global.users = []);
   const exists = users.find(u => u.username === username);
-
   if (exists) return res.status(400).send('❌ Username already exists');
 
   users.push({ username, email, password });
