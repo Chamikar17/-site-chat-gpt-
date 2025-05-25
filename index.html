@@ -1,118 +1,89 @@
-<!-- location-tracker.html --><!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Location Tracker</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 400px;
-      margin: 50px auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #218838;
-    }
-    .error {
-      color: red;
-      text-align: center;
-    }
-    .success {
-      color: green;
-      text-align: center;
-    }
-    .dashboard {
-      display: none;
-    }
+    body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
+    .box { max-width: 400px; margin: auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
+    input, button { width: 100%; padding: 10px; margin: 5px 0; }
+    #dashboard { display: none; }
   </style>
 </head>
 <body>
-  <div class="container" id="authBox">
-    <h2>Login</h2>
+  <div class="box">
+    <h2>Sign Up / Login</h2>
     <input type="text" id="username" placeholder="Username" />
+    <input type="email" id="email" placeholder="Email (only for signup)" />
     <input type="password" id="password" placeholder="Password" />
     <button onclick="login()">Login</button>
-    <p class="error" id="loginError"></p>
-    <hr />
-    <h2>Sign Up</h2>
-    <input type="text" id="signupUser" placeholder="Username" />
-    <input type="email" id="signupEmail" placeholder="Email" />
-    <input type="password" id="signupPass" placeholder="Password" />
     <button onclick="signup()">Sign Up</button>
-    <p class="success" id="signupMsg"></p>
-  </div>  <div class="container dashboard" id="dashboard">
+  </div>
+
+  <div class="box" id="dashboard">
     <h2>Dashboard</h2>
     <button onclick="copyLink()">📋 Copy Tracking Link</button>
-    <button onclick="goToTrack()">📍 View Last Location</button>
-    <p id="copyStatus"></p>
-  </div>  <script>
-    function signup() {
-      const u = document.getElementById('signupUser').value;
-      const e = document.getElementById('signupEmail').value;
-      const p = document.getElementById('signupPass').value;
-      fetch('/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: u, email: e, password: p })
-      }).then(r => r.text()).then(txt => {
-        document.getElementById('signupMsg').innerText = txt.includes('✅') ? txt : '';
-        if (!txt.includes('✅')) alert(txt);
-      });
-    }
+    <button onclick="showLocation()">📍 View Last Location</button>
+    <p id="linkText"></p>
+    <p id="locationText"></p>
+    <button onclick="logout()">🚪 Logout</button>
+  </div>
+
+  <script>
+    let sessionUser = '';
 
     function login() {
-      const u = document.getElementById('username').value;
-      const p = document.getElementById('password').value;
-      fetch('/login', {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      fetch('/api/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: u, password: p })
-      }).then(r => r.text()).then(txt => {
-        if (txt.includes('✅')) {
-          document.getElementById('authBox').style.display = 'none';
-          document.getElementById('dashboard').style.display = 'block';
-        } else {
-          document.getElementById('loginError').innerText = txt;
-        }
-      });
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.ok ? res.text() : Promise.reject(res.text()))
+      .then(msg => {
+        alert(msg);
+        sessionUser = username;
+        document.querySelector('.box').style.display = 'none';
+        document.getElementById('dashboard').style.display = 'block';
+      })
+      .catch(async err => alert(await err));
+    }
+
+    function signup() {
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      fetch('/api/signup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, email, password })
+      })
+      .then(res => res.ok ? res.text() : Promise.reject(res.text()))
+      .then(msg => alert(msg))
+      .catch(async err => alert(await err));
     }
 
     function copyLink() {
-      const userId = 'USER_ID'; // replace dynamically
-      const link = `${window.location.origin}/track-location?id=${userId}`;
-      navigator.clipboard.writeText(link);
-      document.getElementById('copyStatus').innerText = 'Link copied ✅';
+      const url = `${location.origin}/track.html?user=${sessionUser}`;
+      navigator.clipboard.writeText(url);
+      document.getElementById('linkText').innerText = `Link Copied: ${url}`;
     }
 
-    function goToTrack() {
-      window.location.href = '/track';
+    function showLocation() {
+      fetch(`/api/location?user=${sessionUser}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('locationText').innerText = `Last Seen: ${data.lat}, ${data.lon}`;
+        });
     }
-  </script></body>
+
+    function logout() {
+      location.reload();
+    }
+  </script>
+</body>
 </html>
